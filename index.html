@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Onion or Not The Onion?</title>
+  </head>
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      margin: 10px;
+    }
+    button {
+      padding: 10px;
+      border: 1px solid black;
+      background: #EEE;
+      font-size: 13px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button.onion {
+      background: #98FB98;
+    }
+    button.notonion {
+      background: #CDE;
+    }
+  </style>
+  <body>
+
+  <!-- CONTENT -->
+
+  <h1>ONION OR NOT THE ONION?</h1>
+  <p>Decide if an article is an onion article or not -- just by the title!</p>
+
+  <hr />
+
+  <div id="app">
+
+    <div v-if="title">
+      <div id="article-title">
+        <h4>{{title}}</h4>
+      </div>
+      <div v-if="!roundOver">
+        <button class="onion" @click="makeUserSelection('onion');">Onion</button>
+        <button class="notonion" @click="makeUserSelection('nottheonion')">Not the Onion</button>
+      </div>
+
+      <div v-if="roundOver">
+        <section v-if="userCorrect">
+          You got it! Here's the original Link: <a :href="link" target="__blank">{{link}}</a>
+        </section>
+        <section v-else>
+          Boy were you wrong! Here's the original link: <a :href="link" target="__blank">{{link}}</a>
+        </section>
+        <br />
+        <button @click="getNext()">Next</button>
+      </div>
+
+      <div class="score-box">
+        <h3>SCORE: {{score}} / {{total}}</h3>
+      </div>     
+
+    </div>
+  </div>
+
+  <!-- END CONTENT -->
+
+
+
+    <!-- IMPORT SCRIPTS -->
+    <script src="bower_components/vue/dist/vue.js"></script>
+    <script src="bower_components/lodash/dist/lodash.js"></script>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
