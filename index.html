@@ -39,30 +39,39 @@
 
   <div id="app">
 
-    <div v-if="title">
-      <div id="article-title">
-        <h4>{{title}}</h4>
-      </div>
-      <div v-if="!roundOver">
-        <button class="onion" @click="makeUserSelection('theonion');">Onion</button>
-        <button class="notonion" @click="makeUserSelection('nottheonion')">Not the Onion</button>
-      </div>
+    <div v-if="!gameOver">
+      <div v-if="title">
+        <div id="article-title">
+          <h4>{{title}}</h4>
+        </div>
+        <div v-if="!roundOver">
+          <button class="onion" @click="makeUserSelection('theonion');">Onion</button>
+          <button class="notonion" @click="makeUserSelection('nottheonion')">Not the Onion</button>
+        </div>
 
-      <div v-if="roundOver">
-        <section v-if="userCorrect">
-          You got it! Here's the original Link: <a :href="link" target="__blank">{{link}}</a>
-        </section>
-        <section v-else>
-          Boy were you wrong! Here's the original link: <a :href="link" target="__blank">{{link}}</a>
-        </section>
-        <button @click="getNext()">Next</button>
+        <div v-if="roundOver">
+          <section v-if="userCorrect">
+            You got it! Here's the original Link: <a :href="link" target="__blank">{{link}}</a>
+          </section>
+          <section v-else>
+            Boy were you wrong! Here's the original link: <a :href="link" target="__blank">{{link}}</a>
+          </section>
+          <button @click="getNext()">Next</button>
+        </div>
+
+        <div class="score-box">
+          <h3>SCORE: {{score}} / {{currentRound}}</h3>
+        </div>     
+
       </div>
-
-      <div class="score-box">
-        <h3>SCORE: {{score}} / {{total}}</h3>
-      </div>     
-
     </div>
+    <div v-else>
+      <h4>GAME OVER!</h4>
+      <button @click="startOver()">Start Over</button>
+      <div class="score-box">
+        <h3>SCORE: {{score}} / {{currentRound}}</h3>
+      </div> 
+    </div>  
   </div>
 
   <!-- END CONTENT -->
