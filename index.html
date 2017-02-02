@@ -9,6 +9,7 @@
       font-family: Arial, sans-serif;
       font-size: 16px;
       margin: 10px;
+      text-align: center;
     }
     button {
       padding: 10px;
@@ -18,12 +19,13 @@
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
+      margin: 5px;
     }
     button.onion {
       background: #98FB98;
     }
     button.notonion {
-      background: #CDE;
+      background: #ff6666;
     }
   </style>
   <body>
@@ -42,7 +44,7 @@
         <h4>{{title}}</h4>
       </div>
       <div v-if="!roundOver">
-        <button class="onion" @click="makeUserSelection('onion');">Onion</button>
+        <button class="onion" @click="makeUserSelection('theonion');">Onion</button>
         <button class="notonion" @click="makeUserSelection('nottheonion')">Not the Onion</button>
       </div>
 
@@ -53,7 +55,6 @@
         <section v-else>
           Boy were you wrong! Here's the original link: <a :href="link" target="__blank">{{link}}</a>
         </section>
-        <br />
         <button @click="getNext()">Next</button>
       </div>
 

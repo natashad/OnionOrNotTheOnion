@@ -13,12 +13,11 @@ var getJSON = function(url, callback) {
     xhr.send();
 };
 
-var subreddits = ["onion", "nottheonion"];
+var subreddits = ["theonion", "nottheonion"];
 var getNextArticle = function(callback) {
     var randomIndex = Math.floor(Math.random() + 0.5);
     var subreddit = subreddits[randomIndex];
     var subredditURL = "http://www.reddit.com/r/"+subreddit+"/random.json";
-    console.log(subredditURL);
     var returnObj = {
         "title": "ERROR",
         "url": "ERROR",
