@@ -2,8 +2,8 @@ var GAME_ROUNDS = 10;
 var TOTAL_COLLECTED = 100;
 var THE_ONION = "theonion";
 var NOT_THE_ONION = "nottheonion";
-var url_prefix = "https://www.reddit.com/r/";
-var url_suffix = "/new.json?limit=" + TOTAL_COLLECTED;
+var URL_PREFFIX = "https://www.reddit.com/r/";
+var URL_SUFFIX = "/new.json?limit=" + TOTAL_COLLECTED;
 var onionResponse;
 var notOnionResponse;
 var allArticles = [];
@@ -72,51 +72,35 @@ var getJSON = function(url) {
     })
 }
 
-var onionPromise = new Promise(function(resolve, reject) {
-    var url = url_prefix + THE_ONION + url_suffix;
-    getJSON(url).then(function(data) {
-        resolve(data);
-    }, function() {
-        reject("Failure");
-    });
+
+Promise.all([getJSON(URL_PREFFIX + THE_ONION + URL_SUFFIX), 
+             getJSON(URL_PREFFIX + NOT_THE_ONION + URL_SUFFIX)])
+             .then(function(results) {
+    onionResponse = results[0];
+    notOnionResponse = results[1];
+    doSetUpAfterPromises();
+}).catch(function(err) {
+    console.log('Catch: ', err);
 });
 
-var notOnionPromise = new Promise(function(resolve, reject) {
-    var url = url_prefix + NOT_THE_ONION + url_suffix;
-    getJSON(url).then(function(data){
-        resolve(data);
-    }, function() {
-        reject("Failure");
-    });
-});
+
 
 var getRandomInteger = function(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-var filterOutOnionArticles = function(responses) {
+var filterArticles = function(responses, source, startsWithFilter="") {
     var filtered = [];
     var partials = responses['data']['children'];
     for (var i = 0; i < partials.length; i++) {
-        if (partials[i]['data']['url'].startsWith("http://www.theonion.com/article/")) {
-            filtered.push({
-                'title': partials[i]['data']['title'],
-                'url': partials[i]['data']['url'],
-                'source': THE_ONION
-            });
+        var partial = partials[i]['data'];
+        if (startsWithFilter && !partial['url'].startsWith(startsWithFilter)) {
+            continue;
         }
-    }
-    return filtered;
-}
-
-var filterOutNotOnionArticles = function(responses) {
-    var filtered = [];
-    var partials = responses['data']['children'];
-    for (var i = 0; i < partials.length; i++) {
         filtered.push({
-            'title': partials[i]['data']['title'],
-            'url': partials[i]['data']['url'],
-            'source': NOT_THE_ONION
+            'title': partial['title'],
+            'url': partial['url'],
+            'source': source
         });
     }
     return filtered;
@@ -125,7 +109,8 @@ var filterOutNotOnionArticles = function(responses) {
 var doSetUpAfterPromises = function() {
     var usedIndices =[[],[]];
     var filteredArticles = 
-        [filterOutOnionArticles(onionResponse), filterOutNotOnionArticles(notOnionResponse)];
+        [filterArticles(onionResponse, THE_ONION, "http://www.theonion.com/article/"), 
+         filterArticles(notOnionResponse, NOT_THE_ONION)];
     allArticles = [];
     for (var i =0; i < GAME_ROUNDS; i++) {
 
@@ -144,13 +129,4 @@ var doSetUpAfterPromises = function() {
     myApp.link = allArticles[0]['url'];
     myApp.source = allArticles[0]['source'];
 }
-
-Promise.all([onionPromise, notOnionPromise]).then(function(results) {
-    onionResponse = results[0];
-    notOnionResponse = results[1];
-    doSetUpAfterPromises();
-}).catch(function(err) {
-    console.log('Catch: ', err);
-});
-
 
