@@ -1,7 +1,8 @@
 var GAME_ROUNDS = 10;
 var TOTAL_COLLECTED = 100;
-var subreddits = ["theonion", "nottheonion"];
-var url_prefix = "http://www.reddit.com/r/";
+var THE_ONION = "theonion";
+var NOT_THE_ONION = "nottheonion";
+var url_prefix = "https://www.reddit.com/r/";
 var url_suffix = "/new.json?limit=" + TOTAL_COLLECTED;
 var onionResponse;
 var notOnionResponse;
@@ -54,42 +55,57 @@ myApp = new Vue({
 
 });
 
-var onionPromise = new Promise(function(resolve, request) {
-    var url = url_prefix+"theonion"+url_suffix;
-    var xhr = new XMLHttpRequest();
-    xhr.open("get", url, true);
-    xhr.responseType = "json";
-    xhr.onload = function() {
-      var status = xhr.status;
-      if (status == 200) {
-        onionResponse = xhr.response;
-        resolve("Success!");
-      } else {
+// var getJSON = function(url, callback) {
+//     var xhr = new XMLHttpRequest();
+//     xhr.open("get", url, true);
+//     xhr.responseType = "json";
+//     xhr.onload = function() {
+//       var status = xhr.status;
+//       if (status == 200) {
+//         callback(null, xhr.response);
+//       } else {
+//         callback(status);
+//       }
+//     };
+//     xhr.send();
+// };
+var getJSON = function(url) {
+    return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("get", url, true);
+        xhr.responseType = "json";
+        xhr.onload = function() {
+          var status = xhr.status;
+          if (status == 200) {
+            resolve(xhr.response);
+          } else {
+            reject(status);
+          }
+        };
+        xhr.send();
+    })
+}
+
+var onionPromise = new Promise(function(resolve, reject) {
+    var url = url_prefix + THE_ONION + url_suffix;
+    getJSON(url).then(function(data) {
+        resolve(data);
+    }, function() {
         reject("Failure");
-      }
-    };
-    xhr.send();
+    });
 });
 
-var notOnionPromise = new Promise(function(resolve, request) {
-    var url = url_prefix+"nottheonion"+url_suffix;
-    var xhr = new XMLHttpRequest();
-    xhr.open("get", url, true);
-    xhr.responseType = "json";
-    xhr.onload = function() {
-      var status = xhr.status;
-      if (status == 200) {
-        notOnionResponse = xhr.response;
-        resolve("Success!");
-      } else {
+var notOnionPromise = new Promise(function(resolve, reject) {
+    var url = url_prefix + NOT_THE_ONION + url_suffix;
+    getJSON(url).then(function(data){
+        resolve(data);
+    }, function() {
         reject("Failure");
-      }
-    };
-    xhr.send();
+    });
 });
 
-var getRandomNumber = function(max) {
-    return Math.floor(Math.random()*max);
+var getRandomInteger = function(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 var filterOutOnionArticles = function(responses) {
@@ -100,7 +116,7 @@ var filterOutOnionArticles = function(responses) {
             filtered.push({
                 'title': partials[i]['data']['title'],
                 'url': partials[i]['data']['url'],
-                'source': 'theonion'
+                'source': THE_ONION
             });
         }
     }
@@ -114,7 +130,7 @@ var filterOutNotOnionArticles = function(responses) {
         filtered.push({
             'title': partials[i]['data']['title'],
             'url': partials[i]['data']['url'],
-            'source': 'nottheonion'
+            'source': NOT_THE_ONION
         });
     }
     return filtered;
@@ -124,14 +140,15 @@ var doSetUpAfterPromises = function() {
     var usedIndices =[[],[]];
     var filteredArticles = 
         [filterOutOnionArticles(onionResponse), filterOutNotOnionArticles(notOnionResponse)];
+    allArticles = [];
     for (var i =0; i < GAME_ROUNDS; i++) {
 
         //flip coin to pick which list
-        var listInd = Math.floor(Math.random() + 0.5);
+        var listInd = getRandomInteger(0,1);
         var chosenList = filteredArticles[listInd];
-        var randomIndex = getRandomNumber(chosenList.length);
+        var randomIndex = getRandomInteger(0, chosenList.length-1);
         while (usedIndices[listInd].includes(randomIndex)) {
-            var randomIndex = getRandomNumber(chosenList.length);
+            var randomIndex = getRandomInteger(0, chosenList.length-1);
         }
         usedIndices[listInd].push(randomIndex);
         allArticles.push(chosenList[randomIndex]);
@@ -143,6 +160,8 @@ var doSetUpAfterPromises = function() {
 }
 
 Promise.all([onionPromise, notOnionPromise]).then(function(results) {
+    onionResponse = results[0];
+    notOnionResponse = results[1];
     doSetUpAfterPromises();
 }).catch(function(err) {
     console.log('Catch: ', err);
